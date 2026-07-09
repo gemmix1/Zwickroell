@@ -57,12 +57,13 @@ const float  MM_PRO_COUNT = STEIGUNG / CPR;    // bei 2.0: ~0.00048 mm/Count
 const int    DIM_SIGN     = +1;                // falls Mass negativ: auf -1 setzen
 
 // ---------- ANTASTEN ----------
-const int    SPEED_FAST   = 130;               // schnelle Anfahrt (Richtung Probe)
-const int    SPEED_SLOW   = 45;                // langsame Feinantastung
+const int    SPEED_FAST   = 180;               // schnelle Anfahrt (Feder puffert 11mm)
+const int    SPEED_SLOW   = 45;                // langsame Feinantastung (bleibt!)
 const long   BACKOFF      = (long)(0.8 / MM_PRO_COUNT);  // Rueckzug vor Feinantastung
-const long   RETRACT      = (long)(5.0 / MM_PRO_COUNT);  // Rueckzug nach Kontakt
-                                                          // (>= 5mm: Probe muss beim
-                                                          //  Drehen frei schwenken!)
+const long   RETRACT      = (long)(5.0 / MM_PRO_COUNT);  // VOR DEM DREHEN: Probe muss
+                                                          // frei schwenken (>=5mm)!
+const long   RETRACT_KURZ = (long)(1.5 / MM_PRO_COUNT);  // zwischen Antastungen
+                                                          // derselben Seite (spart Zeit)
 const long   MAX_TRAVEL   = (long)(25.0/ MM_PRO_COUNT);  // Sicherheits-Grenze
 // MESSVORGABE: jede Seite wird 3x angetastet, verwendet wird der MITTELWERT.
 const int    N_TOUCH      = 3;
@@ -117,7 +118,7 @@ void fahre(long dCounts, int speed) {
 // ---------- EINE Antastung: nach unten bis Kontakt, Position zurueck ----------
 // Rueckgabe: Encoder-Count bei Kontakt. Immer aus derselben Richtung -> Backlash konsistent.
 // Konvention: +SPEED bewegt den Taster RICHTUNG Probe.
-long tasteEinmal() {
+long tasteEinmal(long rueckzug) {
   long start = pos();
   // 1) schnelle Anfahrt bis Grobkontakt
   motoren.setM1Speed(SPEED_FAST);
@@ -131,14 +132,18 @@ long tasteEinmal() {
   long p = pos();
   stop();
   // 3) freifahren
-  fahre(-RETRACT, SPEED_FAST);
+  fahre(-rueckzug, SPEED_FAST);
   return p;
 }
 
-// N Antastungen mitteln
+// N Antastungen mitteln: zwischendurch nur kurz abheben, erst nach der
+// letzten Antastung voll freifahren (Schwenkfreiheit fuers Drehen)
 long tasteGemittelt(bool &ok) {
   long summe=0; int n=0;
-  for (int i=0;i<N_TOUCH;i++){ long p=tasteEinmal(); if(p!=LONG_MIN){summe+=p; n++;} }
+  for (int i=0;i<N_TOUCH;i++){
+    long rz = (i==N_TOUCH-1) ? RETRACT : RETRACT_KURZ;
+    long p=tasteEinmal(rz); if(p!=LONG_MIN){summe+=p; n++;}
+  }
   ok = (n>0); return ok ? summe/n : 0;
 }
 
@@ -246,7 +251,7 @@ void loop(){
   else if(c>='1' && c<='9'){
     nPasses = c - '0';
     Serial.print(F("Durchlaeufe pro Messung: ")); Serial.print(nPasses);
-    Serial.print(F("  (~")); Serial.print(nPasses*90); Serial.println(F(" s pro 'm')"));
+    Serial.print(F("  (~")); Serial.print(nPasses*60); Serial.println(F(" s pro 'm')"));
   }
   else if(c=='k'){ kalibriere(); }
   else if(c=='w'){ kalibriereBreite(); }
