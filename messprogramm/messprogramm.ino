@@ -66,10 +66,11 @@ const long   RETRACT      = (long)(5.0 / MM_PRO_COUNT);  // Rueckzug nach Kontak
 const long   MAX_TRAVEL   = (long)(25.0/ MM_PRO_COUNT);  // Sicherheits-Grenze
 // MESSVORGABE: jede Seite wird 3x angetastet, verwendet wird der MITTELWERT.
 const int    N_TOUCH      = 3;
-// Komplette Wiederholungen des Gesamtablaufs (1 = eine Messung mit je 3
-// Antastungen pro Seite; hoeher stellen, wenn zusaetzlich die Streuung (+/-)
-// ueber mehrere Durchlaeufe ermittelt werden soll)
-const int    N_PASSES     = 1;
+// Durchlaeufe des Gesamtablaufs (im Serial Monitor mit '1'..'9' einstellbar).
+// Jeder Durchlauf rastet den Winkel NEU ein -> mittelt Schalter- UND
+// Rastfehler weg (Fehler ~ 1/sqrt(n)). Zeit: ~1,5 min pro Durchlauf.
+int          nPasses      = 3;
+const int    MAX_PASSES   = 9;
 
 // ---------- SERVO-POSITIONEN (us) — SG90 180-Grad, an Detent justieren ----------
 const int    SERVO_0   = 500;    // 0 Grad
@@ -184,8 +185,8 @@ bool einPass(float &dicke, float &breite) {
 
 // ---------- MESSEN mit Statistik ----------
 void messen(float &dMw,float &dSd,float &bMw,float &bSd,int &ok){
-  float ds[8], bs[8]; ok=0;
-  for(int p=0;p<N_PASSES;p++){ float d,b; if(einPass(d,b)){ds[ok]=d;bs[ok]=b;ok++;} }
+  float ds[MAX_PASSES], bs[MAX_PASSES]; ok=0;
+  for(int p=0;p<nPasses;p++){ float d,b; if(einPass(d,b)){ds[ok]=d;bs[ok]=b;ok++;} }
   dMw=dSd=bMw=bSd=0; if(!ok) return;
   for(int i=0;i<ok;i++){dMw+=ds[i];bMw+=bs[i];} dMw/=ok;bMw/=ok;
   for(int i=0;i<ok;i++){dSd+=sq(ds[i]-dMw);bSd+=sq(bs[i]-bMw);}
@@ -240,7 +241,12 @@ void loop(){
     if(!ok){ Serial.println(F("Keine gueltige Messung.")); return; }
     Serial.print(F("DICKE:  ")); Serial.print(dMw,3); Serial.print(F(" +/- ")); Serial.print(dSd,3); Serial.println(F(" mm"));
     Serial.print(F("BREITE: ")); Serial.print(bMw,3); Serial.print(F(" +/- ")); Serial.print(bSd,3); Serial.println(F(" mm"));
-    Serial.print(F("(")); Serial.print(ok); Serial.print('/'); Serial.print(N_PASSES); Serial.println(F(" Paesse)"));
+    Serial.print(F("(")); Serial.print(ok); Serial.print('/'); Serial.print(nPasses); Serial.println(F(" Paesse)"));
+  }
+  else if(c>='1' && c<='9'){
+    nPasses = c - '0';
+    Serial.print(F("Durchlaeufe pro Messung: ")); Serial.print(nPasses);
+    Serial.print(F("  (~")); Serial.print(nPasses*90); Serial.println(F(" s pro 'm')"));
   }
   else if(c=='k'){ kalibriere(); }
   else if(c=='w'){ kalibriereBreite(); }
@@ -252,9 +258,10 @@ void loop(){
     servoZu(SERVO_0); dreher.detach();
   }
   else if(c=='?'){
-    Serial.println(F("m=messen k=Dicke-Kal w=Breite-Kal t=antasten s=servo-test"));
+    Serial.println(F("m=messen k=Dicke-Kal w=Breite-Kal t=antasten s=servo-test 1..9=Durchlaeufe"));
     Serial.print(F("2C=")); Serial.print(twoC);
     Serial.print(F("  breiteOff=")); Serial.print(breiteOff,4);
+    Serial.print(F("  Durchlaeufe=")); Serial.print(nPasses);
     Serial.print(F("  270-Servo=")); Serial.println(USE_270_SERVO);
   }
 }
