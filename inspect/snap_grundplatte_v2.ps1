@@ -1,0 +1,17 @@
+$ErrorActionPreference = "Stop"
+$file = "H:\ZwickRoell Projekt\Grundplatte_v2.ipt"
+try { $inv=[Runtime.InteropServices.Marshal]::GetActiveObject("Inventor.Application") }
+catch { $inv=New-Object -ComObject Inventor.Application }
+$inv.Visible=$true
+$doc=$inv.Documents.Open($file,$true)
+function Save-View($cmd,$out){
+  try { $inv.CommandManager.ControlDefinitions.Item($cmd).Execute() } catch {}
+  Start-Sleep -Milliseconds 400
+  $cam=$inv.ActiveView.Camera; $cam.Fit(); $cam.Apply()
+  Start-Sleep -Milliseconds 400
+  $inv.ActiveView.SaveAsBitmap($out,1500,1000)
+}
+Save-View "AppIsometricViewCmd" "H:\ZwickRoell Projekt\_gp_iso.png"
+Save-View "AppTopViewCmd"        "H:\ZwickRoell Projekt\_gp_top.png"
+$doc.Close($true)
+Write-Host "ok"

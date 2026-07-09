@@ -1,0 +1,6 @@
+# Temp-Renders / Logs
+_*.png
+constraints_log.txt
+# Inventor Lock-/Tempdateien
+*.lck
+OldVersions/

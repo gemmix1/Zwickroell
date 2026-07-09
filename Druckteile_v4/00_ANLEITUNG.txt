@@ -1,0 +1,79 @@
+MESSSTAND v4b - AUTONOM (Kontakt-Taster, Servo dreht Probe, Rastbolzen)
+=======================================================================
+KORRIGIERTE VERSION - alte Rahmen_v4.stl NICHT mehr drucken!
+Alle 10 STLs je 1x drucken (+ Kupplung optional, besser Metall kaufen).
+
+DRUCKEN
+-------
+Material : PETG oder PLA+ | Schicht 0,15-0,2 mm | 4 Waende | 40-50 % Infill
+
+Teil                     Orientierung / Hinweis
+Grundplatte_v4           flach aufs Bett. ACHTUNG: 210 x 140 mm -> Bett >= 210
+                         noetig (Ender 3 / Prusa: passt). Zu klein? Melden,
+                         dann teile ich die Platte.
+Turm_Servo               flach auf die grosse Wandflaeche legen
+Turm_Idler               flach auf die grosse Wandflaeche legen
+Motorblock_N20           stehend wie modelliert (Kammer nach oben)
+Taster_Schlitten         stehend (LM8UU-Bohrungen SENKRECHT)
+                         -> Variante fuer T8-Spindel (Flanschmutter). NUR EINE
+                            der beiden Schlitten-Varianten drucken!
+Taster_Schlitten_M8      ALTERNATIVE: fuer normale M8-Gewindestange als
+                         Spindel (Sechskantmutter-Tasche). Firmware:
+                         STEIGUNG = 1.0 (M8x1) / 1.25 (M8 normal) setzen!
+                         Mit T8-Spindel: STEIGUNG = 2.0.
+Dreh_Klemme              Flansch nach unten
+Idler_Klemme             Zapfen nach unten, mit Brim
+Taststift                stehend (Kragen unten), langsam drucken
+Taststift_Kappe          flach
+Rast_Halter              flach (Federtasche oben)
+
+v5-PRAEZISIONS-AUFBAU (Budget-Upgrade):
+- Fuehrung: 2x LM8UU-Kugellager in die Ø15-Bohrungen des Schlittens pressen,
+  laufen auf 2 GLATTEN Ø8-Wellen (Presssitz in Ø7,8-Bohrungen der Platte, +Kleber).
+- Spindel: T8-TRAPEZSPINDEL mit Anti-Backlash-POM-Flanschmutter. Mutter von
+  UNTEN in die Ø22,4-Senkung des Schlittens, 4x M3 auf dem Ø16-Lochkreis.
+  In der Firmware STEIGUNG setzen: T8x2 -> 2.0, T8x8 -> 8.0!
+- Idler-Lager: 608ZZ-Kugellager (8x22x7) von INNEN in den Idler-Turm pressen
+  (Lippe aussen haelt), Ø8-Zapfen der Idler-Klemme steckt im Lager.
+Passungen pruefen: Ø15 (LM8UU), Ø22,3 (608ZZ), Ø8 (Wellen/Zapfen), Ø4-Stifte.
+Bei zu eng: aufbohren/feilen oder Toleranz im build-Skript aendern.
+
+SO FUNKTIONIERT DIE MECHANIK (Zusammenbau-Logik)
+------------------------------------------------
+1. TASTSTIFT: Ø4-Stahlstift (aus 24er-Pack) in die Aufnahme unten am
+   gedruckten Taststift kleben = verschleissfeste Spitze.
+   Stift von UNTEN in den Schlitten: Feder (OD ~9-11 mm) in die Ø13-Senkung,
+   Kragen drueckt dagegen, Kappe mit 2x M2 von unten anschrauben.
+   Stift-Oberende schaut oben ~3 mm raus -> drueckt beim Kontakt den
+   MIKROSCHALTER, der am Boss oben mit 2x M2.5 befestigt wird
+   (Hebel ueber das Stift-Ende biegen/justieren).
+2. RASTBOLZEN (wichtig fuer Genauigkeit!): zweiter Ø4-Stahlstift in den
+   Rast_Halter (aussen am Servo-Turm, 2x M2.2), Feder dahinter, Tesa drueber.
+   Der Stift rastet in die 4 Flansch-Loecher der Dreh_Klemme -> exakte
+   0/90/180-Grad-Winkel. Die Firmware schaltet den Servo beim Antasten ab
+   (detach), damit die Raste den Winkel definiert - NICHT der Servo.
+3. SERVO: SG90 von aussen durch den Turm-Ausschnitt stecken, Flansch liegt
+   in der Vertiefung, 2 Schrauben. Welle greift in die Dreh_Klemme (Ø4.9),
+   M2-Schraube axial durch die Klemme in die Servowelle.
+4. MOTOR: N20 von unten an den Motorblock schrauben (M1.6, 4 Loecher passen
+   fuer gaengige Muster), Kupplung in der Kammer, Madenschrauben durch die
+   Seitenfenster anziehen. Block mit 2x M3 von oben durch die Platte.
+5. TUERME: je 2x M3 durch die Fusslaschen in die Platten-Pilotloecher.
+6. PROBE einlegen: erst in die Dreh_Klemme-Tasche (16 mm tief), dann
+   Idler_Klemme aufs andere Ende, Idler-Turm ueber den Zapfen schieben,
+   Turm festschrauben.
+7. KLEMMSCHRAUBEN (M3 quer in beiden Klemmen) sanft anziehen: druecken das
+   Probenende immer gegen DIESELBE Taschenwand -> konstanter Versatz, der
+   per 'w'-Kalibrierung komplett rausfaellt (wichtig fuer die BREITE!).
+
+NICHT DRUCKEN - KAUFEN (siehe Bausatz_Anleitung.md, v5 ~76-84 EUR)
+------------------------------------------------------------------
+Encoder-Motor N20 12V 1:150 (6-Pin!), T8-Spindel+Anti-Backlash-Mutter,
+2x Ø8-Welle 150 glatt, LM8UU, 608ZZ, Metallkupplung 3->8, Mikroschalter,
+Federn, Ø4-Zylinderstifte, Schrauben M1.6/M2/M2.5/M3.
+
+FIRMWARE: messprogramm/messprogramm.ino
+  Encoder A/B->Pin2/3, Schalter->A0/GND, Servo->Pin6, Motor->M1, 12V->VIN
+  Kalibrieren: 'k' (Dicken-Endmass) -> 'w' (Breiten-Endmass, Klemmschrauben
+  wie im Messbetrieb!) -> 'm' = messen. Details: Bausatz_Anleitung.md
+Baugruppe/3D-Plan: Messstand_v4.iam (Inventor)

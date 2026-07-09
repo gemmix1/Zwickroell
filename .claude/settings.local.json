@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.amazon.de)",
+      "WebSearch",
+      "Bash(where openscad *)",
+      "Bash(openscad --version)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Bash(py --version)",
+      "Bash(python -c \"import numpy; print\\('numpy ok'\\)\")",
+      "Bash(python -c \"import trimesh; print\\('trimesh ok'\\)\")",
+      "Bash(python -c \"import numpy_stl; print\\('numpy-stl ok'\\)\")",
+      "Bash(python -c \"from stl import mesh; print\\('stl ok'\\)\")",
+      "Bash(\"C:/Users/GemmiDad-GBSE/AppData/Local/Microsoft/WindowsApps/python.exe\" -c \"print\\('python works'\\); import sys; print\\(sys.version\\)\")",
+      "Bash(echo \"---exit $?\")",
+      "PowerShell(& \"H:\\\\ZwickRoell Projekt\\\\build_kupplung_stl.ps1\")",
+      "PowerShell(Get-ChildItem \"H:\\\\ZwickRoell Projekt\" -File | Where-Object { $_.Name -match 'kupplung|wellenkupplung|diag' } | Select-Object Name, @{N='KB';E={\"{0:N1}\" -f \\($_.Length/1KB\\)}}, LastWriteTime | Sort-Object LastWriteTime | Format-Table -AutoSize)"
+    ]
+  }
+}
