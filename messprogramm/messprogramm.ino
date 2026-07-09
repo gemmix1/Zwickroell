@@ -64,8 +64,12 @@ const long   RETRACT      = (long)(5.0 / MM_PRO_COUNT);  // Rueckzug nach Kontak
                                                           // (>= 5mm: Probe muss beim
                                                           //  Drehen frei schwenken!)
 const long   MAX_TRAVEL   = (long)(25.0/ MM_PRO_COUNT);  // Sicherheits-Grenze
-const int    N_TOUCH      = 4;                  // Antastungen je Position (gemittelt)
-const int    N_PASSES     = 3;                  // komplette Wiederholungen
+// MESSVORGABE: jede Seite wird 3x angetastet, verwendet wird der MITTELWERT.
+const int    N_TOUCH      = 3;
+// Komplette Wiederholungen des Gesamtablaufs (1 = eine Messung mit je 3
+// Antastungen pro Seite; hoeher stellen, wenn zusaetzlich die Streuung (+/-)
+// ueber mehrere Durchlaeufe ermittelt werden soll)
+const int    N_PASSES     = 1;
 
 // ---------- SERVO-POSITIONEN (us) — SG90 180-Grad, an Detent justieren ----------
 const int    SERVO_0   = 500;    // 0 Grad
