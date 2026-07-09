@@ -45,8 +45,9 @@ SO FUNKTIONIERT DIE MECHANIK (Zusammenbau-Logik)
    Stift von UNTEN in den Schlitten: Feder (OD ~9-11 mm) in die Ø13-Senkung,
    Kragen drueckt dagegen, Kappe mit 2x M2 von unten anschrauben.
    Stift-Oberende schaut oben ~3 mm raus -> drueckt beim Kontakt den
-   MIKROSCHALTER, der am Boss oben mit 2x M2.5 befestigt wird
-   (Hebel ueber das Stift-Ende biegen/justieren).
+   MIKROSCHALTER (V-153): am Boss mit 2x M3 + Muttern durch die
+   LANGLOECHER befestigen — Hoehe so einstellen, dass der Hebel das
+   Stift-Ende bei ~1-2 mm Anhub ausloest (Langloecher = Justage!).
 2. RASTBOLZEN (wichtig fuer Genauigkeit!): zweiter Ø4-Stahlstift in den
    Rast_Halter (aussen am Servo-Turm, 2x M2.2), Feder dahinter, Tesa drueber.
    Der Stift rastet in die 4 Flansch-Loecher der Dreh_Klemme -> exakte
