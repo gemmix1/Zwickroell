@@ -21,10 +21,10 @@ $cd=$doc.ComponentDefinition;$ef=$cd.Features.ExtrudeFeatures
 $XY=$cd.WorkPlanes.Item(3);$XZ=$cd.WorkPlanes.Item(2)
 $s=$cd.Sketches.Add($XY); Rect $s -34 -20 34 20
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 24*$f, $kPos, $kJoin)|Out-Null
-$s=$cd.Sketches.Add($XY); Rect $s 4 20 24 26
+$s=$cd.Sketches.Add($XY); Rect $s 0 20 28 26
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 24*$f, $kPos, $kJoin)|Out-Null
 $top24=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 24*$f); $top24.Visible=$false
-$s=$cd.Sketches.Add($top24); Rect $s 4 16 24 26
+$s=$cd.Sketches.Add($top24); Rect $s 0 17.5 28 26      # Boss fuer V-153-Schalter
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 16*$f, $kPos, $kJoin)|Out-Null
 $choles=@( @(-22,0,15.0), @(22,0,15.0), @(0,0,8.6), @(0,14,6.4) )   # M8-Bohrung 8.6!
 foreach($h in $choles){
@@ -39,10 +39,10 @@ foreach($hx in -9,9){
   $s=$cd.Sketches.Add($XY); Circ $s $hx 14 2.0
   $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kPos, $kCut)|Out-Null
 }
-$pBoss=$cd.WorkPlanes.AddByPlaneAndOffset($XZ, 16*$f); $pBoss.Visible=$false
-foreach($hx in 9,18.5){
-  $s=$cd.Sketches.Add($pBoss); Circ $s $hx 34 2.4
-  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 10.2*$f, $kPos, $kCut)|Out-Null
+$pBoss=$cd.WorkPlanes.AddByPlaneAndOffset($XZ, 17.5*$f); $pBoss.Visible=$false
+foreach($sx in 2.9,25.1){                              # V-153: Langloecher 22.2-Raster
+  $s=$cd.Sketches.Add($pBoss); Rect $s ($sx-1.6) 30 ($sx+1.6) 38
+  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8.7*$f, $kPos, $kCut)|Out-Null
 }
 $vol=$cd.MassProperties.Volume
 $ipt=Join-Path $PSScriptRoot "Taster_Schlitten_M8.ipt"; $stlP=Join-Path $PSScriptRoot "Taster_Schlitten_M8.stl"

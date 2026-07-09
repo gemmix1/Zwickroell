@@ -111,9 +111,13 @@ $doc=NewPart;$cd=$doc.ComponentDefinition;$ef=$cd.Features.ExtrudeFeatures
 $XY=$cd.WorkPlanes.Item(3);$XZ=$cd.WorkPlanes.Item(2)
 $s=$cd.Sketches.Add($XY); Rect $s -18 -13 18 13
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 32*$f, $kPos, $kJoin)|Out-Null
-$mholes=@( @(0,0,5.0), @(4.75,0,1.8), @(-4.75,0,1.8), @(0,4.75,1.8), @(0,-4.75,1.8) )
-foreach($h in $mholes){                                # Boden: Welle + N20-Schrauben
-  $s=$cd.Sketches.Add($XY); Circ $s $h[0] $h[1] $h[2]
+$s=$cd.Sketches.Add($XY); Circ $s 0 0 5.0              # Motorwellen-Durchgang
+$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 4.2*$f, $kPos, $kCut)|Out-Null
+# N20-Flanschschrauben: 4 RADIALE LANGLOECHER (deckt Lochabstand 7..11 ab,
+# N20-Bohrbilder variieren zwischen 8 und 9.5 mm)
+$mslots=@( @(3.3,-1,5.8,1), @(-5.8,-1,-3.3,1), @(-1,3.3,1,5.8), @(-1,-5.8,1,-3.3) )
+foreach($sl in $mslots){
+  $s=$cd.Sketches.Add($XY); Rect $s $sl[0] $sl[1] $sl[2] $sl[3]
   $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 4.2*$f, $kPos, $kCut)|Out-Null
 }
 foreach($hx in -14.5,14.5){                            # Saeulen-Pilots (durch)
@@ -133,10 +137,12 @@ $doc=NewPart;$cd=$doc.ComponentDefinition;$ef=$cd.Features.ExtrudeFeatures
 $XY=$cd.WorkPlanes.Item(3);$XZ=$cd.WorkPlanes.Item(2)
 $s=$cd.Sketches.Add($XY); Rect $s -34 -20 34 20
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 24*$f, $kPos, $kJoin)|Out-Null
-$s=$cd.Sketches.Add($XY); Rect $s 4 20 24 26           # Stuetzpad hinter Boss
+$s=$cd.Sketches.Add($XY); Rect $s 0 20 28 26           # Stuetzpad hinter Boss
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 24*$f, $kPos, $kJoin)|Out-Null
 $top24=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 24*$f); $top24.Visible=$false
-$s=$cd.Sketches.Add($top24); Rect $s 4 16 24 26        # Schalter-Boss z 24..40
+# Boss fuer V-153-Mikroschalter (27.8 lang, Loecher 22.2): Flaeche bei y=17.5
+# (Stift-Bahn bei (0,14) bleibt frei), z 24..40
+$s=$cd.Sketches.Add($top24); Rect $s 0 17.5 28 26
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 16*$f, $kPos, $kJoin)|Out-Null
 # v5: LM8UU-Kugellager (Ø15 Presssitz) + T8-Anti-Backlash-Flanschmutter
 $choles=@( @(-22,0,15.0), @(22,0,15.0), @(0,0,10.5), @(0,14,6.4) )
@@ -157,10 +163,12 @@ foreach($hx in -9,9){                                  # Kappen-Pilotloecher
   $s=$cd.Sketches.Add($XY); Circ $s $hx 14 2.0
   $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kPos, $kCut)|Out-Null
 }
-$pBoss=$cd.WorkPlanes.AddByPlaneAndOffset($XZ, 16*$f); $pBoss.Visible=$false
-foreach($hx in 9,18.5){                                # Mikroschalter-Schrauben
-  $s=$cd.Sketches.Add($pBoss); Circ $s $hx 34 2.4
-  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 10.2*$f, $kPos, $kCut)|Out-Null
+# V-153-Montage: 2 LANGLOECHER (3.2 x 8) im 22.2-Raster, M3 + Mutter hinten,
+# hoehenverstellbar fuer die Hebel-Justage
+$pBoss=$cd.WorkPlanes.AddByPlaneAndOffset($XZ, 17.5*$f); $pBoss.Visible=$false
+foreach($sx in 2.9,25.1){
+  $s=$cd.Sketches.Add($pBoss); Rect $s ($sx-1.6) 30 ($sx+1.6) 38
+  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8.7*$f, $kPos, $kCut)|Out-Null
 }
 SaveDoc $doc "Taster_Schlitten"
 
