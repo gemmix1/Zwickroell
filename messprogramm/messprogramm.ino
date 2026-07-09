@@ -57,20 +57,21 @@ const float  MM_PRO_COUNT = STEIGUNG / CPR;    // bei 2.0: ~0.00048 mm/Count
 const int    DIM_SIGN     = +1;                // falls Mass negativ: auf -1 setzen
 
 // ---------- ANTASTEN ----------
-const int    SPEED_FAST   = 180;               // schnelle Anfahrt (Feder puffert 11mm)
+const int    SPEED_FAST   = 250;               // schnelle Anfahrt (Feder puffert 11mm)
 const int    SPEED_SLOW   = 45;                // langsame Feinantastung (bleibt!)
-const long   BACKOFF      = (long)(0.8 / MM_PRO_COUNT);  // Rueckzug vor Feinantastung
+const long   BACKOFF      = (long)(0.5 / MM_PRO_COUNT);  // Rueckzug vor Feinantastung
 const long   RETRACT      = (long)(5.0 / MM_PRO_COUNT);  // VOR DEM DREHEN: Probe muss
                                                           // frei schwenken (>=5mm)!
-const long   RETRACT_KURZ = (long)(1.5 / MM_PRO_COUNT);  // zwischen Antastungen
+const long   RETRACT_KURZ = (long)(1.0 / MM_PRO_COUNT);  // zwischen Antastungen
                                                           // derselben Seite (spart Zeit)
 const long   MAX_TRAVEL   = (long)(25.0/ MM_PRO_COUNT);  // Sicherheits-Grenze
 // MESSVORGABE: jede Seite wird 3x angetastet, verwendet wird der MITTELWERT.
 const int    N_TOUCH      = 3;
 // Durchlaeufe des Gesamtablaufs (im Serial Monitor mit '1'..'9' einstellbar).
-// Jeder Durchlauf rastet den Winkel NEU ein -> mittelt Schalter- UND
-// Rastfehler weg (Fehler ~ 1/sqrt(n)). Zeit: ~1,5 min pro Durchlauf.
-int          nPasses      = 3;
+// Standard 1 -> Gesamtmessung ~40 s. Jeder weitere Durchlauf rastet den
+// Winkel NEU ein und verbessert den Mittelwert mit 1/sqrt(n)
+// (z.B. '3' fuer Praezisionsmessung ~2 min).
+int          nPasses      = 1;
 const int    MAX_PASSES   = 9;
 
 // ---------- SERVO-POSITIONEN (us) — SG90 180-Grad, an Detent justieren ----------
@@ -78,7 +79,7 @@ const int    SERVO_0   = 500;    // 0 Grad
 const int    SERVO_90  = 1450;   // 90 Grad (SG90 ~500..2400 us)
 const int    SERVO_180 = 2400;   // 180 Grad
 const int    SERVO_270 = 2400;   // (bei SG90 ungenutzt)
-const int    SERVO_SETTLE = 500;               // ms Beruhigung nach Drehung
+const int    SERVO_SETTLE = 400;               // ms Beruhigung nach Drehung
 
 // ---------- KALIBRIER-ENDMASSE ----------
 const float  KNOWN_GAUGE  = 6.000;             // wahre Dicke  des Dicken-Endmasses  ('k')
@@ -158,7 +159,7 @@ void servoZu(int us) {
 long messePos(int us, bool &ok) {
   servoZu(us);
   dreher.detach();            // schlaff -> Rastbolzen definiert den Winkel
-  delay(300);
+  delay(250);
   return tasteGemittelt(ok);
 }
 
@@ -251,7 +252,7 @@ void loop(){
   else if(c>='1' && c<='9'){
     nPasses = c - '0';
     Serial.print(F("Durchlaeufe pro Messung: ")); Serial.print(nPasses);
-    Serial.print(F("  (~")); Serial.print(nPasses*60); Serial.println(F(" s pro 'm')"));
+    Serial.print(F("  (~")); Serial.print(nPasses*40); Serial.println(F(" s pro 'm')"));
   }
   else if(c=='k'){ kalibriere(); }
   else if(c=='w'){ kalibriereBreite(); }
