@@ -51,14 +51,12 @@ foreach($h in $holes){
   $s=$cd.Sketches.Add($topP); Circ $s $h[0] $h[1] $h[2]
   $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8.2*$f, $kNeg, $kCut)|Out-Null
 }
-foreach($sy in -1,1){                                  # Wellen-Bosse
-  $s=$cd.Sketches.Add($XY); Circ $s -14 ($sy*22) 16.0
+# Wellen-Bosse ALS ROHR: Aussen 16 + Innen 7.8 im SELBEN Sketch (Innenkontur-
+# Trick — der einzige, der hier zuverlaessig schneidet). Bohrung geht dadurch
+# ganz durch: die Welle sitzt unten auf dem Tisch auf = sauber definiert.
+foreach($sy in -1,1){
+  $s=$cd.Sketches.Add($XY); Circ $s -14 ($sy*22) 16.0; Circ $s -14 ($sy*22) 7.8
   $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 20*$f, $kPos, $kJoin)|Out-Null
-}
-$topB=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 20*$f); $topB.Visible=$false
-foreach($sy in -1,1){                                  # glatte Ã˜8-Wellen: Presssitz (+Kleber)
-  $s=$cd.Sketches.Add($topB); Circ $s -14 ($sy*22) 7.8
-  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 16*$f, $kNeg, $kCut)|Out-Null
 }
 SaveDoc $doc "Grundplatte_v4"
 
@@ -223,8 +221,10 @@ $s=$cd.Sketches.Add($XY); Circ $s 0 0 6.0
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 27*$f, $kPos, $kJoin)|Out-Null
 $s=$cd.Sketches.Add($XY); Circ $s 0 0 12.0             # Kragen unten
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 3*$f, $kPos, $kJoin)|Out-Null
-$s=$cd.Sketches.Add($XY); Circ $s 0 0 4.2              # Stahlstift-Aufnahme
-$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kPos, $kCut)|Out-Null
+# Stahlstift-Aufnahme 4.2 x 8: kSym aus Ebene mittig (z=4) -> sicher 0..8 offen
+$midT=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 4*$f); $midT.Visible=$false
+$s=$cd.Sketches.Add($midT); Circ $s 0 0 4.2
+$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kSym, $kCut)|Out-Null
 SaveDoc $doc "Taststift"
 
 Write-Host "8) Taststift_Kappe..."
