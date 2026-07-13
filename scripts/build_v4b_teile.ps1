@@ -17,6 +17,8 @@ $tg=$inv.TransientGeometry
 function P($x,$y){ return $tg.CreatePoint2d($x*$f,$y*$f) }
 function NewPart(){ $d=$inv.Documents.Add($kPart,$inv.FileManager.GetTemplateFile($kPart)); try{$d.UnitsOfMeasure.LengthUnits=$mmU}catch{}; return $d }
 function SaveDoc($doc,$name){
+  $doc.Update()   # WICHTIG: ohne dies liefert MassProperties im Silent-Modus
+                   # eine STALE (gecachte) Zahl -> Volumen-Check war bisher blind!
   $vol=$doc.ComponentDefinition.MassProperties.Volume
   $ipt=Join-Path $PSScriptRoot ("..\cad\"+$name+".ipt"); $stlP=Join-Path $PSScriptRoot ("..\stl\"+$name+".stl")
   if(Test-Path $ipt){Remove-Item $ipt -Force}
@@ -139,9 +141,22 @@ $s=$cd.Sketches.Add($XY); Rect $s 0 20 28 26           # Stuetzpad hinter Boss
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 24*$f, $kPos, $kJoin)|Out-Null
 $top24=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 24*$f); $top24.Visible=$false
 # Boss fuer V-153-Mikroschalter (27.8 lang, Loecher 22.2): Flaeche bei y=17.5
-# (Stift-Bahn bei (0,14) bleibt frei), z 24..40
-$s=$cd.Sketches.Add($top24); Rect $s 0 17.5 28 26
-$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 16*$f, $kPos, $kJoin)|Out-Null
+# (Stift-Bahn bei (0,14) bleibt frei), z 24..40.
+# WICHTIG: Nachtraegliche Schnitte in einen separat gejointen Boss versagen
+# hier zuverlaessig still (empirisch mit Testteilen bestaetigt, jede Ebene/
+# Richtung/kSym probiert). Deshalb: Boss als 3 gestapelte XY-Join-Schichten,
+# die mittlere Schicht (z 30..38, Langloch-Hoehe) hat die 2 Schlitze bereits
+# als Aussparung im Profil -> nur die ueberall bewaehrte XY+kJoin-Methode.
+$s=$cd.Sketches.Add($top24); Rect $s 0 17.5 28 26          # z 24..30 (durchgehend)
+$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 6*$f, $kPos, $kJoin)|Out-Null
+$top30=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 30*$f); $top30.Visible=$false
+foreach($seg in @(@(0,1.3),@(4.5,23.5),@(26.7,28))){        # z 30..38, 3 Segmente
+  $s=$cd.Sketches.Add($top30); Rect $s $seg[0] 17.5 $seg[1] 26
+  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kPos, $kJoin)|Out-Null
+}
+$top38=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 38*$f); $top38.Visible=$false
+$s=$cd.Sketches.Add($top38); Rect $s 0 17.5 28 26           # z 38..40 (Deckel)
+$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 2*$f, $kPos, $kJoin)|Out-Null
 # v5: LM8UU-Kugellager (Ã˜15 Presssitz) + T8-Anti-Backlash-Flanschmutter
 $choles=@( @(-22,0,15.0), @(22,0,15.0), @(0,0,10.5), @(0,14,6.4) )
 foreach($h in $choles){                                # Durchgangsbohrungen
@@ -161,13 +176,7 @@ foreach($hx in -9,9){                                  # Kappen-Pilotloecher
   $s=$cd.Sketches.Add($XY); Circ $s $hx 14 2.0
   $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kPos, $kCut)|Out-Null
 }
-# V-153-Montage: 2 LANGLOECHER (3.2 x 8) im 22.2-Raster, M3 + Mutter hinten,
-# hoehenverstellbar fuer die Hebel-Justage
-$pBoss=$cd.WorkPlanes.AddByPlaneAndOffset($XZ, 17.5*$f); $pBoss.Visible=$false
-foreach($sx in 2.9,25.1){
-  $s=$cd.Sketches.Add($pBoss); Rect $s ($sx-1.6) 30 ($sx+1.6) 38
-  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8.7*$f, $kPos, $kCut)|Out-Null
-}
+# (Langloecher sind bereits beim Boss-Aufbau als Aussparung enthalten.)
 SaveDoc $doc "Taster_Schlitten"
 
 # ================= 5) KLEMMEN v2 (Koerper 24, Tasche 16) =================

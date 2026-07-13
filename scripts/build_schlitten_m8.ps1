@@ -24,8 +24,18 @@ $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 24*$f, $kPos, $kJoin)|Out-Nul
 $s=$cd.Sketches.Add($XY); Rect $s 0 20 28 26
 $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 24*$f, $kPos, $kJoin)|Out-Null
 $top24=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 24*$f); $top24.Visible=$false
-$s=$cd.Sketches.Add($top24); Rect $s 0 17.5 28 26      # Boss fuer V-153-Schalter
-$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 16*$f, $kPos, $kJoin)|Out-Null
+# Boss als 3 gestapelte XY-Join-Schichten mit Langloch-Aussparung in der
+# mittleren Schicht (siehe build_v4b_teile.ps1 fuer die Begruendung).
+$s=$cd.Sketches.Add($top24); Rect $s 0 17.5 28 26           # z 24..30
+$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 6*$f, $kPos, $kJoin)|Out-Null
+$top30=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 30*$f); $top30.Visible=$false
+foreach($seg in @(@(0,1.3),@(4.5,23.5),@(26.7,28))){         # z 30..38, 3 Segmente
+  $s=$cd.Sketches.Add($top30); Rect $s $seg[0] 17.5 $seg[1] 26
+  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kPos, $kJoin)|Out-Null
+}
+$top38=$cd.WorkPlanes.AddByPlaneAndOffset($XY, 38*$f); $top38.Visible=$false
+$s=$cd.Sketches.Add($top38); Rect $s 0 17.5 28 26            # z 38..40 (Deckel)
+$ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 2*$f, $kPos, $kJoin)|Out-Null
 $choles=@( @(-22,0,15.0), @(22,0,15.0), @(0,0,8.6), @(0,14,6.4) )   # M8-Bohrung 8.6!
 foreach($h in $choles){
   $s=$cd.Sketches.Add($top24); Circ $s $h[0] $h[1] $h[2]
@@ -39,11 +49,8 @@ foreach($hx in -9,9){
   $s=$cd.Sketches.Add($XY); Circ $s $hx 14 2.0
   $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8*$f, $kPos, $kCut)|Out-Null
 }
-$pBoss=$cd.WorkPlanes.AddByPlaneAndOffset($XZ, 17.5*$f); $pBoss.Visible=$false
-foreach($sx in 2.9,25.1){                              # V-153: Langloecher 22.2-Raster
-  $s=$cd.Sketches.Add($pBoss); Rect $s ($sx-1.6) 30 ($sx+1.6) 38
-  $ef.AddByDistanceExtent($s.Profiles.AddForSolid(), 8.7*$f, $kPos, $kCut)|Out-Null
-}
+# (Langloecher sind bereits beim Boss-Aufbau als Aussparung enthalten.)
+$doc.Update()   # ohne dies liefert MassProperties eine STALE Zahl
 $vol=$cd.MassProperties.Volume
 $ipt=Join-Path $PSScriptRoot "..\cad\Taster_Schlitten_M8.ipt"; $stlP=Join-Path $PSScriptRoot "..\stl\Taster_Schlitten_M8.stl"
 if(Test-Path $ipt){Remove-Item $ipt -Force}
